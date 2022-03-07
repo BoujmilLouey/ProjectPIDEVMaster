@@ -37,4 +37,4 @@ security:
         #- { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
     - { path: ^/back, roles: ROLE_ADMIN }
-    - { path: ^/base, roles: ROLE_USER }
+    - { path: ^/, roles: ROLE_USER }

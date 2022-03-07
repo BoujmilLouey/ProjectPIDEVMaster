@@ -16,6 +16,15 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Guard\GuardAuthenticatorHandler;
 use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use App\Entity\Commande;
+use App\Entity\LigneCommande;
+use App\Form\RegistrationType;
+use App\Repository\CommandeRepository;
+use App\Repository\LigneCommandeRepository;
+use App\Repository\ProductsRepository;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class RegistrationController extends AbstractController
 {
@@ -89,6 +98,38 @@ class RegistrationController extends AbstractController
         // @TODO Change the redirect on success and handle or remove the flash message in your templates
         $this->addFlash('success', 'Your email address has been verified.');
 
-        return $this->redirectToRoute('base');
+        return $this->redirectToRoute('/');
+    }
+    /**
+     * @Route("/imprimer", name="imprimer")
+     */
+    public function imprimer(LigneCommandeRepository $Repository)
+    {
+        //$commande=$commandeRepository->find($id);
+
+        // Configure Dompdf according to your needs
+        $pdfOptions = new Options();
+        $pdfOptions->set('defaultFont', 'Arial');
+
+        // Instantiate Dompdf with our options
+        $dompdf = new Dompdf($pdfOptions);
+        // Retrieve the HTML generated in our twig file
+        $html = $this->renderView('commande/imprime.html.twig', [
+            'commandes' => $Repository->findAll()
+        ]);
+
+        // Load HTML to Dompdf
+        $dompdf->loadHtml($html);
+
+        // (Optional) Setup the paper size and orientation 'portrait' or 'portrait'
+        $dompdf->setPaper('A4', 'portrait');
+
+        // Render the HTML as PDF
+        $dompdf->render();
+
+        // Output the generated PDF to Browser (force download)
+        $dompdf->stream("myOrder.pdf", [
+            "Attachment" => false
+        ]);
     }
 }
